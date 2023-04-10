@@ -3,7 +3,7 @@ import math
 import time
 from abc import abstractmethod
 
-from ai_module.ali_nls import ALiNls
+from ai_module.funasr import FunASR
 from core import wsa_server
 from scheduler.thread_manager import MyThread
 from utils import util
@@ -32,7 +32,7 @@ class Recorder:
         self.__MAX_LEVEL = 25000
         self.__MAX_BLOCK = 100
 
-        self.__aLiNls = ALiNls()
+        self.__FunASR = FunASR()
 
     
 
@@ -62,7 +62,7 @@ class Recorder:
             text += "-"
         print(text + " [" + str(int(per * 100)) + "%]")
 
-    def __waitingResult(self, iat: ALiNls):
+    def __waitingResult(self, iat: FunASR):
         if self.__fay.playing:
             return
         self.processing = True
@@ -117,24 +117,24 @@ class Recorder:
                     soon = True  #
                     isSpeaking = True  #用户正在说话
                     util.log(3, "聆听中...")
-                    self.__aLiNls = ALiNls()
+                    self.__FunASR = FunASR()
                     try:
-                        self.__aLiNls.start()
+                        self.__FunASR.start()
                     except Exception as e:
                         print(e)
                     for buf in self.__history_data:
-                        self.__aLiNls.send(buf)
+                        self.__FunASR.send(buf)
             else:
                 last_mute_time = time.time()
                 if isSpeaking:
                     if time.time() - last_speaking_time > _RELEASE:
                         isSpeaking = False
-                        self.__aLiNls.end()
+                        self.__FunASR.end()
                         util.log(1, "语音处理中...")
                         self.__fay.last_quest_time = time.time()
-                        self.__waitingResult(self.__aLiNls)
+                        self.__waitingResult(self.__FunASR)
             if not soon and isSpeaking:
-                self.__aLiNls.send(data)
+                self.__FunASR.send(data)
 
         
         
